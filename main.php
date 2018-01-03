@@ -8,9 +8,16 @@
  * contact@fushupeng.com
  */
 
-define('DEBUG', true);
+define('DEBUG', false);
 define('TRAINING', false);
 
+/**
+ * 计算颜色是否相似
+ * @param $standard
+ * @param $target
+ * @param $tolerance
+ * @return bool
+ */
 function similar($standard, $target, $tolerance)
 {
     if (is_array($standard)) {
@@ -32,6 +39,10 @@ function similar($standard, $target, $tolerance)
         abs($sb - $tb) <= $tolerance;
 }
 
+/**
+ * 使用 adb 驱动截屏，并 pull 到指定目录中
+ * @param $path
+ */
 function screenCapturing($path)
 {
     print_r("Screen capturing.....\r\n");
@@ -41,6 +52,15 @@ function screenCapturing($path)
     ob_end_clean();
 }
 
+/**
+ * 获取起止点坐标
+ * 终点坐标获取方法仍需要进一步优化
+ * @param $image
+ * @param $width
+ * @param $height
+ * @param $conf
+ * @return array
+ */
 function getStartAndEnd($image, $width, $height, $conf)
 {
     $border = getScanBorder($image, $width, $height, $conf);
@@ -54,6 +74,14 @@ function getStartAndEnd($image, $width, $height, $conf)
     }
 }
 
+/**
+ * 获取检测区域边界，提高执行效率
+ * @param $image
+ * @param $width
+ * @param $height
+ * @param $conf
+ * @return array
+ */
 function getScanBorder($image, $width, $height, $conf)
 {
     $heightStartBorder = $height / 3;
@@ -71,6 +99,15 @@ function getScanBorder($image, $width, $height, $conf)
     return ['start' => $heightStartBorder, 'end' => $heightEndBorder];
 }
 
+/**
+ * 获取起始点（棋子）的坐标
+ * @param $image
+ * @param $width
+ * @param $border
+ * @param $conf
+ * @return array
+ * @throws Exception
+ */
 function getStartPoint($image, $width, $border, $conf)
 {
     $horizontalStart = $width / 8;
@@ -100,6 +137,16 @@ function getStartPoint($image, $width, $border, $conf)
     ];
 }
 
+/**
+ * 获取终点坐标
+ * @param $image
+ * @param $width
+ * @param $startPoint
+ * @param $conf
+ * @param $border
+ * @return array
+ * @throws Exception
+ */
 function getEndPoint($image, $width, $startPoint, $conf, $border)
 {
     $points = [];
@@ -152,6 +199,13 @@ function getEndPoint($image, $width, $startPoint, $conf, $border)
     ];
 }
 
+/**
+ * 计算点击屏幕时间
+ * @param $startPoint
+ * @param $endPoint
+ * @param $conf
+ * @return int
+ */
 function getPressTime($startPoint, $endPoint, $conf)
 {
     return (int) (
@@ -161,6 +215,10 @@ function getPressTime($startPoint, $endPoint, $conf)
     );
 }
 
+/**
+ * 执行跳跃
+ * @param $pressTime
+ */
 function doJump($pressTime)
 {
     echo "Jumping......\r\n";
@@ -169,6 +227,16 @@ function doJump($pressTime)
     system($cmd);
 }
 
+/**
+ * 保留 debug 信息
+ * @param $image
+ * @param $width
+ * @param $height
+ * @param $startPoint
+ * @param $endPoint
+ * @param $path
+ * @param null $matchPoints
+ */
 function debug($image, $width, $height, $startPoint, $endPoint, $path, $matchPoints = null)
 {
     $target = imagecreatetruecolor($width, $height);
@@ -202,6 +270,10 @@ function debug($image, $width, $height, $startPoint, $endPoint, $path, $matchPoi
     imagedestroy($target);
 }
 
+/**
+ * 程序初始化
+ * @return string
+ */
 function init()
 {
     $path = '';
@@ -221,6 +293,12 @@ function init()
     return $path;
 }
 
+/**
+ * 执行训练操作
+ * @param $max
+ * @param $conf
+ * @param $path
+ */
 function training($max, $conf, $path)
 {
     $max = $max >= 107 ? 107 : $max;
@@ -236,6 +314,11 @@ function training($max, $conf, $path)
     }
 }
 
+/**
+ * 执行操作
+ * @param $conf
+ * @param $path
+ */
 function run($conf, $path)
 {
     for ($i = 0; ; $i++) {
